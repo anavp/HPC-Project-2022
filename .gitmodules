@@ -1,3 +1,6 @@
 [submodule "benchmark/wfc"]
 	path = benchmark/wfc
 	url = https://github.com/emilk/wfc.git
+[submodule "benchmark/wfc-forked-repo"]
+	path = benchmark/wfc-forked-repo
+	url = https://github.com/anavp/HPC-Wave-Function-Collapse-Benchmark.git
