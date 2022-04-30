@@ -5,7 +5,10 @@
 #include <assert.h>
 #include <math.h>
 #include <stack>
-#include <stb_image.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 typedef struct tile Tile;
 
@@ -333,13 +336,16 @@ void propagate(Tile* compatibleMatrix, int comRow, int comCol, int* coefficients
 }
 
 
-// char * read_input_image(string path){
-//     const char *filename = path.c_str();
-//     int x, y, n = 4;
-//     unsigned char *data = stbi_load(filename, &x, &y, &n, 3);
-
-//     stbi_image_free(data);
-// }
+char * read_input_image(string path){
+    const char *filename = path.c_str();
+    int x, y, n = 4;
+    unsigned char *data = stbi_load(filename, &x, &y, &n, 3);
+    int comp, quality;
+    stbi_write_png(filename, x, y, comp, data, quality);
+    // stbi_write_jpg(filename, y, x, comp, data, quality);
+    
+    stbi_image_free(data);
+}
 
 
 int main(int argc, char *argv[])
