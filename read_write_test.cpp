@@ -19,7 +19,11 @@ char * read_input_image(string path, string destination_path){
     print_var(y);
     for (int i = 0; i < y; ++i){
         for (int j = 0; j < x; ++j){
-            cout << data[i * y + j] << " ";
+            cout << "(" << (int)data[i * y * n + j * n] << ", ";
+            for (int k =1; k < n-1; ++k){
+                cout << (int)data[i * y * n + j * n + k] << ", ";
+            }
+            cout << (int)data[i * y * n + j * n + n-1] << ") ";
         }
         cout << endl;
     }
