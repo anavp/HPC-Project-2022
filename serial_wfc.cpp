@@ -336,12 +336,19 @@ void propagate(Tile* compatibleMatrix, int comRow, int comCol, int* coefficients
 }
 
 
-char * read_input_image(string path){
+char * read_input_image(string path, string destination_path){
     const char *filename = path.c_str();
     int x, y, n = 4;
     unsigned char *data = stbi_load(filename, &x, &y, &n, 3);
-    int comp, quality;
-    stbi_write_png(filename, x, y, comp, data, quality);
+    for (int i = 0; i < y; ++i){
+        for (int j = 0; j < x; ++j){
+            cout << data[i * y + j] << " ";
+        }
+        cout << endl;
+    }
+    // int comp, quality;
+    // const char * dest_path = destination_path.c_str();
+    // stbi_write_png(dest_path, x, y, comp, data, quality);
     // stbi_write_jpg(filename, y, x, comp, data, quality);
     
     stbi_image_free(data);
