@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
+#include <fstream>
+// #include <sys>
+// #include <sys.h>
 // #include <stack>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -365,23 +368,27 @@ inline int rolling_hash(int r, int g, int b){
     return r + (HASHING_PRIME * g) + (HASHING_PRIME * HASHING_PRIME * b);
 }
 
+inline int get_val(unsigned char *data, int i, int j, int n, int y){
+    return rolling_hash((int)data[i*y*n+j*n], (int)data[i*y*n + j*n + 1], (int)data[i * y * n + j * n + 2]);
+}
 
-char * read_input_image(string path, string destination_path){
-    const char *filename = path.c_str();
+void read_input_image(const char *filename){
+    // const char *filename = path.c_str();
     int x, y, n = 4;
     unsigned char *data = stbi_load(filename, &x, &y, &n, 3);
+    fstream temp_file;
+    temp_file.open(TEMP_OUT, 'w');
     for (int i = 0; i < y; ++i){
-        for (int j = 0; j < x; ++j){
-            cout << data[i * y + j] << " ";
+        for (int j = 0; j < x - 1; ++j){
+            temp_file << get_val(data, i, j, n, y);
+            temp_file << " ";
+            // ofstream << data[i * y + j] << " ";
         }
-        cout << endl;
+        temp_file << get_val(data, i, x - 1, n, y);
+        temp_file << endl;
+        // cout << endl;
     }
-
-    // int comp, quality;
-    // const char * dest_path = destination_path.c_str();
-    // stbi_write_png(dest_path, x, y, comp, data, quality);
-    // stbi_write_jpg(filename, y, x, comp, data, quality);
-    
+    temp_file.close();
     stbi_image_free(data);
 }
 
@@ -391,8 +398,12 @@ int main(int argc, char *argv[])
     srand(5234);
 
     FILE *stream;
-    char *filename = argv[1];
-    assert(filename != NULL);
+    char *filename2 = argv[1];
+    assert(filename2 != NULL);
+    string fname = TEMP_OUT;
+
+    const char *filename = fname.c_str();
+    read_input_image(filename);
     stream = fopen(filename, "r");
     if (stream == NULL) {
         perror("ERROR: No input file given");
@@ -469,6 +480,7 @@ int main(int argc, char *argv[])
     }
 
     // printModColArray(coefficients, outputSize, outputCol, TOTAL_CHAR);
+    system("rm -f temp_out.txt");
     delete[] coefficients;
     delete[] coefficientsCopy;
     return 0;
