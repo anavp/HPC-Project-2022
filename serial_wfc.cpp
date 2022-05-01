@@ -377,7 +377,7 @@ void read_input_image(const char *filename){
     int x, y, n = 4;
     unsigned char *data = stbi_load(filename, &x, &y, &n, 3);
     fstream temp_file;
-    temp_file.open(TEMP_OUT, 'w');
+    temp_file.open(TEMP_OUT, ios::out);
     for (int i = 0; i < y; ++i){
         for (int j = 0; j < x - 1; ++j){
             temp_file << get_val(data, i, j, n, y);
