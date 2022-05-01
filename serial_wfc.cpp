@@ -412,8 +412,8 @@ int main(int argc, char *argv[])
     if (TRACE) printf("Opening file %s\n", filename);
 
     int inputRow = 0, inputCol = 0; // Size loops
-    char uniqueChar[256]; // Implies 256 char limit on input
-    int charWeight[256] = {0};
+    char uniqueChar[16908285]; // Implies 256 char limit on input
+    int charWeight[16908285] = {0};
     fillBlankChar(uniqueChar);
     getRowAndColAndChar(inputRow, inputCol, uniqueChar, stream);
     if (TRACE) printf("File size: %d rows, %d cols\n", inputRow, inputCol);
@@ -461,7 +461,7 @@ int main(int argc, char *argv[])
 
     // for(int i =0; i < 1; i++){
     while(isFullyCollapsed(isCollapsedArray, outputSize) == 0){
-        // printModColArray(coefficients, outputSize, outputCol, TOTAL_CHAR);
+        printModColArray(coefficients, outputSize, outputCol, TOTAL_CHAR);
         int mEntIndex = minEntropyIndex(coefficients, charWeight, uniqueChar, outputSize);
         if (TRACE) printf("Min entropy Index is %d \n", mEntIndex);
         collapse(coefficients, mEntIndex, charWeight, uniqueChar);
