@@ -14,6 +14,8 @@
 #include "stb_image_write.h"
 #define HASHING_PRIME 257
 #define TEMP_OUT "temp_out.txt"
+#define endl '\n'
+#define print_var(x) cout << #x << ": " << x << endl;
 
 typedef struct tile Tile;
 
@@ -380,8 +382,15 @@ void read_input_image(const char *filename){
     temp_file.open(TEMP_OUT, ios::out);
     for (int i = 0; i < y; ++i){
         for (int j = 0; j < x - 1; ++j){
+            int val_obtained  = get_val(data, i, j, n , y);
+            print_var(val_obtained);
             temp_file << get_val(data, i, j, n, y);
             temp_file << " ";
+            // string temp_str;
+            // temp_str += to_string(get_val(data, i, j, n, y));
+            // temp_str += " ";
+            // temp_file.write(temp_str.c_str());
+            // temp_file.write()
             // ofstream << data[i * y + j] << " ";
         }
         temp_file << get_val(data, i, x - 1, n, y);
@@ -480,7 +489,7 @@ int main(int argc, char *argv[])
     }
 
     // printModColArray(coefficients, outputSize, outputCol, TOTAL_CHAR);
-    system("rm -f temp_out.txt");
+    //system("rm -f temp_out.txt");
     delete[] coefficients;
     delete[] coefficientsCopy;
     return 0;
