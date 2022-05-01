@@ -4,11 +4,13 @@
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
-#include <stack>
+// #include <stack>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
+#define HASHING_PRIME 257
+#define TEMP_OUT "temp_out.txt"
 
 typedef struct tile Tile;
 
@@ -198,16 +200,22 @@ int getTilesAtIndex(int* coefficients, int index){
     return sum;
 }
 
-int isFullyCollapsed(int* coefficients, int outputSize){
+int isFullyCollapsed(int* isCollapsedArray, int outputSize){
     for(int i = 0; i < outputSize; i++){
-        int count = getTilesAtIndex(coefficients, i);
-        if (count > 1) return 0;
-        if (count == 0) {
+        if (isCollapsedArray[i] > 1) return 0;
+        if (isCollapsedArray[i] == 0) {
             printf("ERROR: Collapse failure\n");
+            
             exit(1);
         }
     }
     return 1;
+}
+
+void fillCollapsed(int* isCollapsedArray, int* coefficients, int outputSize){
+    for(int i = 0; i < outputSize; i++){
+        isCollapsedArray[i] = getTilesAtIndex(coefficients, i);
+    }
 }
 
 float shannonEntropy(int* coefficients, int index, int* charWeight, char* uniqueChar) {
@@ -230,7 +238,7 @@ int minEntropyIndex(int* coefficients, int* charWeight, char* uniqueChar, int ou
     for(int i = 0; i < outputSize; i++){
         if (getTilesAtIndex(coefficients, i) == 1)
             continue;
-        float entropy = shannonEntropy(coefficients, i, charWeight, uniqueChar) - 0.1 * ((double) rand() / (RAND_MAX));
+        float entropy = shannonEntropy(coefficients, i, charWeight, uniqueChar);
         if (entropy < minEntropy) { // Use the BattleCode feature here, or add noise
             minEntropy = entropy;
             minEntropyIndex = i;
@@ -292,47 +300,69 @@ int checkMatch(Tile* compatibleMatrix, int comRow, int comCol, char firstChar, c
     return 0;
 }
 
-void propagate(Tile* compatibleMatrix, int comRow, int comCol, int* coefficients, int coeffRow, int coeffCol, int index){
-    stack<int> tilesToPropagate;
-    tilesToPropagate.push(index);
-    while(!tilesToPropagate.empty()){
-        int curIndex = tilesToPropagate.top();
-        tilesToPropagate.pop();
-        for (int dir=0; dir< 4; dir++){ // Get direction
-            int otherIndex = validDirection(coeffRow, coeffCol, curIndex/coeffCol, curIndex%coeffCol, dir); // Get 2nd tile
-            if (otherIndex == -1) continue; // If no tile, continue
-
-            // if(TRACE) printf("Checking direction %d and other index %d\n", dir, otherIndex);
+void propagate(Tile* compatibleMatrix, int* isCollapsedArray, int comRow, int comCol, int* coefficients, int* coefficientsCopy, 
+    int coeffRow, int coeffCol, int index){
+    int stopFlag = 1;
+    while(stopFlag > 0){
+        stopFlag = 0;
+        for (int mainLoop = 0; mainLoop < coeffCol * coeffRow; mainLoop++){
+            int curIndex = mainLoop;
             int willPush = 0;
-            for(int j = 0; j < TOTAL_CHAR; j++){
-                char otherChar = coefficients[otherIndex*TOTAL_CHAR + j]; // Got one of the other tile's chars
-                // if(TRACE) printf("Enemy char is %c\n", otherChar);
-                if (otherChar != 0){
-                    int removeFlag = 0;
-                    for (int i = 0; i < TOTAL_CHAR; i++){ // Check if completely illegal
-                        char curChar = coefficients[curIndex*TOTAL_CHAR + i];
-                        if (curChar == 0){
-                            continue;
+            for (int dir = 0; dir < 4; dir++){ // Iterate through neighbors
+                int otherIndex = validDirection(coeffRow, coeffCol, curIndex/coeffCol, curIndex%coeffCol, dir); // Get 2nd tile
+                if (otherIndex == -1) continue; // If no tile, continue
+
+                for (int i = 0; i < TOTAL_CHAR; i++){ 
+                    char curChar = coefficients[curIndex*TOTAL_CHAR + i];
+                    if (curChar != 0){
+                        int removeFlag = 0;
+                        for(int j = 0; j < TOTAL_CHAR; j++){ //Iterate through enemy possible tiles
+                            char otherChar = coefficients[otherIndex*TOTAL_CHAR + j]; // Got one of the other's tile
+                            // if(TRACE) printf("Enemy char is %c\n", otherChar);
+                            if (otherChar == 0){
+                                continue;
+                            }
+                            int newDir;
+                            if (dir == 0)
+                                newDir = 1;
+                            else if (dir == 1)
+                                newDir = 0;
+                            else if (dir == 2)
+                                newDir = 3;
+                            else if (dir == 3)
+                                newDir = 2;
+                            int matchIndex = checkMatch(compatibleMatrix, comRow, comCol, otherChar, curChar, newDir);
+                            if (matchIndex != 0){ // Does match with atleast one neighbour, don't remove this character
+                                removeFlag = 1;
+                            }
+                            
                         }
-                        // if(TRACE) printf("Friendly char is %c\n", curChar);
-                        int matchIndex = checkMatch(compatibleMatrix, comRow, comCol, curChar, otherChar, dir);
-                        // if(TRACE) printf("Match index is %d\n", matchIndex);
-                        if (matchIndex != 0){ // Does match with atleast one neighbour, don't remove this character
-                            removeFlag = 1;
+                        if (removeFlag == 0){
+                            willPush = 1;
+                            coefficientsCopy[curIndex*TOTAL_CHAR + i] = 0;    
                         }
-                    }
-                    if (removeFlag == 0){
-                        willPush = 1;
-                        coefficients[otherIndex*TOTAL_CHAR + j] = 0;    
                     }
                 }
+                if (willPush == 1){
+                    isCollapsedArray[mainLoop] = 1;
+                }
+                else{
+                    isCollapsedArray[mainLoop] = 0;
+                }
             }
-            if (willPush == 1){
-                tilesToPropagate.push(otherIndex);
-            }
+        }
+        for(int i=0; i < coeffCol * coeffRow; i++){
+                stopFlag += isCollapsedArray[i];
+        }
+        for(int copier=0; copier < coeffCol * coeffRow * TOTAL_CHAR; copier++){
+            coefficients[copier] = coefficientsCopy[copier];
         }
         // printModColArray(coefficients, coeffRow * coeffCol, coeffCol, TOTAL_CHAR);
     }
+}
+
+inline int rolling_hash(int r, int g, int b){
+    return r + (HASHING_PRIME * g) + (HASHING_PRIME * HASHING_PRIME * b);
 }
 
 
@@ -346,6 +376,7 @@ char * read_input_image(string path, string destination_path){
         }
         cout << endl;
     }
+
     // int comp, quality;
     // const char * dest_path = destination_path.c_str();
     // stbi_write_png(dest_path, x, y, comp, data, quality);
@@ -410,21 +441,35 @@ int main(int argc, char *argv[])
         printModColArray(coefficients, outputSize, outputCol, TOTAL_CHAR);
     }
 
+    int* isCollapsedArray = new int[outputSize];
+    for(int i = 0; i < outputSize; i++){
+        isCollapsedArray[i] = 2;
+    }
+
+    int* coefficientsCopy = new int[outputSize * TOTAL_CHAR];
+
     // for(int i =0; i < 1; i++){
-    while(!isFullyCollapsed(coefficients, outputSize)){
+    while(isFullyCollapsed(isCollapsedArray, outputSize) == 0){
         // printModColArray(coefficients, outputSize, outputCol, TOTAL_CHAR);
         int mEntIndex = minEntropyIndex(coefficients, charWeight, uniqueChar, outputSize);
         if (TRACE) printf("Min entropy Index is %d \n", mEntIndex);
         collapse(coefficients, mEntIndex, charWeight, uniqueChar);
         if (TRACE) printf("After collapse, coefficients:\n");
         if (TRACE) printModColArray(coefficients, outputSize, outputCol, TOTAL_CHAR);
-        propagate(compatibleMatrix, inputRow, inputCol, coefficients, outputRow, outputCol, mEntIndex);
+
+        for(int copier=0; copier < outputSize * TOTAL_CHAR; copier++){
+            coefficientsCopy[copier] = coefficients[copier];
+        }
+
+        propagate(compatibleMatrix, isCollapsedArray, inputRow, inputCol, coefficients, coefficientsCopy, outputRow, outputCol, mEntIndex);
         if (TRACE) printf("Propagation is as follows \n");
         if (TRACE) printModColArray(coefficients, outputSize, outputCol, TOTAL_CHAR);
+        fillCollapsed(isCollapsedArray, coefficients, outputSize);
     //     printf("===========\n");
     }
 
-    printModColArray(coefficients, outputSize, outputCol, TOTAL_CHAR);
+    // printModColArray(coefficients, outputSize, outputCol, TOTAL_CHAR);
     delete[] coefficients;
+    delete[] coefficientsCopy;
     return 0;
 }

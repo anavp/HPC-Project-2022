@@ -13,31 +13,32 @@ using namespace std;
 
 char * read_input_image(string path, string destination_path){
     const char *filename = path.c_str();
-    int x, y, n = 4;
-    unsigned char *data = stbi_load(filename, &x, &y, &n, 3);
-    print_var(x);
-    print_var(y);
-    for (int i = 0; i < y; ++i){
-        for (int j = 0; j < x; ++j){
-            cout << "(" << (int)data[i * y * n + j * n] << ", ";
-            for (int k =1; k < n-1; ++k){
-                cout << (int)data[i * y * n + j * n + k] << ", ";
-            }
-            cout << (int)data[i * y * n + j * n + n-1] << ") ";
-        }
-        cout << endl;
-    }
+    int x, y, n;
+    unsigned char *data = stbi_load(filename, &x, &y, &n, 0);
+    // print_var(x);
+    // print_var(y);
+    // for (int i = 0; i < y; ++i){
+    //     for (int j = 0; j < x; ++j){
+    //         cout << "(" << (int)data[i * y * n + j * n] << ", ";
+    //         for (int k =1; k < n-1; ++k){
+    //             cout << (int)data[i * y * n + j * n + k] << ", ";
+    //         }
+    //         cout << (int)data[i * y * n + j * n + n-1] << ") ";
+    //     }
+    //     cout << endl;
+    // }
     // int comp, quality;
-    // const char * dest_path = destination_path.c_str();
+    const char * dest_path = destination_path.c_str();
     // stbi_write_png(dest_path, x, y, comp, data, quality);
     // stbi_write_jpg(filename, y, x, comp, data, quality);
+    // stbi_write_jpg(dest_path, x, y, 1, data, 100);
+    stbi_write_bmp(dest_path, x, y, 3, data);
     
     stbi_image_free(data);
 }
 
 int main(){
     string input_path = "./benchmark/wfc/samples/3bricks.bmp";
-    read_input_image(input_path, "nothing");
-
+    read_input_image(input_path, "s4.bmp");
     return 0;
 }

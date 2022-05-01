@@ -1,4 +1,4 @@
-CFLAGS=-g -ggdb -O2 -Werror=implicit-function-declaration -Wl,-z,now -fstack-protector -Wall
+# CFLAGS=-g -ggdb -O2 -Wl,now -fstack-protector -Wall
 CC=g++
 EXECUTABLE=serial_wfc
 ${EXECUTABLE}: ${EXECUTABLE}.cpp
