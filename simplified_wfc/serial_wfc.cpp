@@ -4,18 +4,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
-#include <fstream>
-// #include <sys>
-// #include <sys.h>
-// #include <stack>
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
-#define HASHING_PRIME 257
-#define TEMP_OUT "temp_out.txt"
-#define endl '\n'
-#define print_var(x) cout << #x << ": " << x << endl;
 
 typedef struct tile Tile;
 
@@ -366,53 +354,13 @@ void propagate(Tile* compatibleMatrix, int* isCollapsedArray, int comRow, int co
     }
 }
 
-inline int rolling_hash(int r, int g, int b){
-    return r + (HASHING_PRIME * g) + (HASHING_PRIME * HASHING_PRIME * b);
-}
-
-inline int get_val(unsigned char *data, int i, int j, int n, int y){
-    return rolling_hash((int)data[i*y*n+j*n], (int)data[i*y*n + j*n + 1], (int)data[i * y * n + j * n + 2]);
-}
-
-void read_input_image(const char *filename){
-    // const char *filename = path.c_str();
-    int x, y, n = 4;
-    unsigned char *data = stbi_load(filename, &x, &y, &n, 3);
-    fstream temp_file;
-    temp_file.open(TEMP_OUT, ios::out);
-    for (int i = 0; i < y; ++i){
-        for (int j = 0; j < x - 1; ++j){
-            int val_obtained  = get_val(data, i, j, n , y);
-            print_var(val_obtained);
-            temp_file << get_val(data, i, j, n, y);
-            temp_file << " ";
-            // string temp_str;
-            // temp_str += to_string(get_val(data, i, j, n, y));
-            // temp_str += " ";
-            // temp_file.write(temp_str.c_str());
-            // temp_file.write()
-            // ofstream << data[i * y + j] << " ";
-        }
-        temp_file << get_val(data, i, x - 1, n, y);
-        temp_file << endl;
-        // cout << endl;
-    }
-    temp_file.close();
-    stbi_image_free(data);
-}
-
-
 int main(int argc, char *argv[])
 {
     srand(5234);
 
     FILE *stream;
-    char *filename2 = argv[1];
-    assert(filename2 != NULL);
-    string fname = TEMP_OUT;
-
-    const char *filename = fname.c_str();
-    read_input_image(filename);
+    char *filename = argv[1];
+    assert(filename != NULL);
     stream = fopen(filename, "r");
     if (stream == NULL) {
         perror("ERROR: No input file given");
@@ -421,8 +369,8 @@ int main(int argc, char *argv[])
     if (TRACE) printf("Opening file %s\n", filename);
 
     int inputRow = 0, inputCol = 0; // Size loops
-    char uniqueChar[16908285]; // Implies 256 char limit on input
-    int charWeight[16908285] = {0};
+    char uniqueChar[256]; // Implies 256 char limit on input
+    int charWeight[256] = {0};
     fillBlankChar(uniqueChar);
     getRowAndColAndChar(inputRow, inputCol, uniqueChar, stream);
     if (TRACE) printf("File size: %d rows, %d cols\n", inputRow, inputCol);
@@ -470,7 +418,7 @@ int main(int argc, char *argv[])
 
     // for(int i =0; i < 1; i++){
     while(isFullyCollapsed(isCollapsedArray, outputSize) == 0){
-        printModColArray(coefficients, outputSize, outputCol, TOTAL_CHAR);
+        // printModColArray(coefficients, outputSize, outputCol, TOTAL_CHAR);
         int mEntIndex = minEntropyIndex(coefficients, charWeight, uniqueChar, outputSize);
         if (TRACE) printf("Min entropy Index is %d \n", mEntIndex);
         collapse(coefficients, mEntIndex, charWeight, uniqueChar);
@@ -489,7 +437,6 @@ int main(int argc, char *argv[])
     }
 
     // printModColArray(coefficients, outputSize, outputCol, TOTAL_CHAR);
-    //system("rm -f temp_out.txt");
     delete[] coefficients;
     delete[] coefficientsCopy;
     return 0;

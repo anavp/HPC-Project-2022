@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <fstream>
+#define endl "\n"
 #define print_var(x) cout << #x << ": " << x << endl;
 
 using namespace std;
@@ -37,8 +39,28 @@ char * read_input_image(string path, string destination_path){
     stbi_image_free(data);
 }
 
+void alt_test(string path){
+    fstream file;
+    file.open(path, ios::in);
+    int input;
+    char inp2;
+    string line;
+    vector<int> values;
+    while(file.good()){
+        getline(file, line);
+        print_var(line);
+        
+        // file >> input;
+        // print_var(input);
+        // file >> inp2;
+        // print_var(inp2);
+    }
+}
+
 int main(){
     string input_path = "./benchmark/wfc/samples/3bricks.bmp";
-    read_input_image(input_path, "s4.bmp");
+    // read_input_image(input_path, "s4.bmp");
+    string input_path2 = "./sample.txt";
+    alt_test(input_path2);
     return 0;
 }
