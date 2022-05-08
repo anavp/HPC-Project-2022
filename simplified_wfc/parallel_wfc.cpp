@@ -354,15 +354,15 @@ void propagate(Tile* compatibleMatrix, int* isCollapsedArray, int comRow, int co
             }
 #if DO_OPEN_MP
         }
-
-        #pragma omp parallel for
 #endif
+
+//         #pragma omp parallel for
         for(int i=0; i < coeffCol * coeffRow; i++){
             stopFlag += isCollapsedArray[i];
         }
-#if DO_OPEN_MP
-        #pragma omp parallel for
-#endif
+// #if DO_OPEN_MP
+//         #pragma omp parallel for
+// #endif
         for(int copier=0; copier < coeffCol * coeffRow * TOTAL_CHAR; copier++){
             coefficients[copier] = coefficientsCopy[copier];
         }
