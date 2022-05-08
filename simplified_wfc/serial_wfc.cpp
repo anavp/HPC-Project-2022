@@ -436,7 +436,7 @@ int main(int argc, char *argv[])
     //     printf("===========\n");
     }
 
-    // printModColArray(coefficients, outputSize, outputCol, TOTAL_CHAR);
+    printModColArray(coefficients, outputSize, outputCol, TOTAL_CHAR);
     delete[] coefficients;
     delete[] coefficientsCopy;
     return 0;
